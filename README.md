@@ -46,7 +46,7 @@ For **exim4_package_name** value good choice is also `exim4-daemon-heavy` or any
 
 ### Using lists of dictionaries
 
-**exim4_conf_keyvalue** used to create config files with key-value pairs of data.  For example, to configure a list of route_data records which can be used to override or augment MX information from the DNS: 
+**exim4_conf_keyvalue** is used to create config files with key-value pairs of data.  For example, to configure a list of route_data records which can be used to override or augment MX information from the DNS:
 ```yaml
 exim4_conf_keyvalue:
   - name: hubbed_hosts
@@ -56,7 +56,7 @@ exim4_conf_keyvalue:
 ```
 As a result, file `/etc/exim4/hubbed_hosts` will be created with key-value pairs of domain pattern and route data.
 
-**exim4_conf_values** used to create config files with flat list values.  For example, to configure a list of envelope
+**exim4_conf_values** is used to create config files with flat list values.  For example, to configure a list of envelope
 recipients for which incoming messages are subject to recipient verification with a callout:
 ```yaml
 exim4_conf_values:
@@ -122,7 +122,7 @@ exim4_features_enable:
       group: main
 ```
 
-To re-configure existing Exim installation, add this variables to appropriate
+To re-configure existing Exim installation, add these variables to appropriate
 group- or host- vars and then run Ansible with `exim4-dkim,exim4-reconfigure`
 tags:
 
@@ -155,7 +155,7 @@ You may want to adjust them to best suite your setup.
 Maintaining Exim4 log rotation
 ------------------------------
 
-By default this role keep log rotation settings as it is set in a Debian package.
+By default this role keeps log rotation settings as it is set in a Debian package.
 To adjust these settings the following variables are used:
 
 ```yaml
@@ -174,7 +174,7 @@ exim4_logrotate_paniclog:
     create: 640 Debian-exim adm
 ```
 
-This example setup rotation of mainlog and rejectlog on a monthly basis:
+This example sets up rotation of mainlog and rejectlog on a monthly basis:
 
 ```yaml
 exim4_logrotate_base:
@@ -211,7 +211,7 @@ This will enable builtin features:
 * `02_exim4-custom_options` in config group `main`
 * `30_exim4-config_dovecot_lmtp` in config group `transport`
 
-And disable `30_exim4-config_examples` feature if exist in `/etc/exim/conf.d/auth`.
+And disable `30_exim4-config_examples` feature, if it exist in `/etc/exim4/conf.d/auth`.
 
 Feature `02_exim4-custom_options` adds custom options provided in
 `exim4_custom_options` into Exim4 config.
