@@ -9,7 +9,7 @@ dist: trusty
 addons:
   apt:
     packages:
-    - python-pip
+      - python-pip
 
 install:
   # Install ansible
