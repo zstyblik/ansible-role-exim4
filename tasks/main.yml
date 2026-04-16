@@ -1,19 +1,46 @@
 ---
 
+- name: Include specific variables for Debian 10 and older.
+  when: |
+    ansible_os_family == "Debian"
+    and ansible_facts.distribution_major_version | int < 11
+  ansible.builtin.include_vars:
+    file: "{{ ansible_os_family }}_10.yml"
+
+- name: Include specific variables for Debian 11 and newer.
+  when: |
+    ansible_os_family == "Debian"
+    and ansible_facts.distribution_major_version | int >= 11
+  ansible.builtin.include_vars:
+    file: "{{ ansible_os_family }}.yml"
+
+- name: Set exim4_logrotate_base variable
+  ansible.builtin.set_fact:
+    exim4_logrotate_base: "{{ __exim4_logrotate_base }}"
+  when: not exim4_logrotate_base
+
+- name: Set exim4_logrotate_paniclog variable
+  ansible.builtin.set_fact:
+    exim4_logrotate_paniclog: "{{ __exim4_logrotate_paniclog }}"
+  when: not exim4_logrotate_paniclog
+
 - name: Install Exim4 package
-  action: apt
-  args:
+  ansible.builtin.package:
     name: "{{ exim4_package_name }}"
     state: present
+  become: true
   tags:
     - packages
     - exim4
 
 - name: Configure update-exim4.conf.conf
-  action: template
-  args:
+  ansible.builtin.template:
     src: update-exim4.conf.j2
     dest: /etc/exim4/update-exim4.conf.conf
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
   notify: update exim4.conf
   tags:
     - exim4
@@ -21,11 +48,14 @@
 
 - name: Enable exim4 features
   when: exim4_features_enable is defined and exim4_features_enable
-  action: template
-  args:
+  ansible.builtin.template:
     src: "{{ exim4_src | default('default') }}/{{ item.name }}"
-    dest: "/etc/exim4/conf.d/{{ item.group }}/{{ item.name}}"
+    dest: "/etc/exim4/conf.d/{{ item.group }}/{{ item.name }}"
+    owner: root
+    group: root
+    mode: '0644'
   with_items: "{{ exim4_features_enable }}"
+  become: true
   notify: update exim4.conf.template
   tags:
     - exim4
@@ -33,11 +63,11 @@
 
 - name: Disable exim4 features
   when: exim4_features_disable is defined and exim4_features_disable
-  action: file
-  args:
-    dest: "/etc/exim4/conf.d/{{ item.group }}/{{ item.name}}"
+  ansible.builtin.file:
+    dest: "/etc/exim4/conf.d/{{ item.group }}/{{ item.name }}"
     state: absent
   with_items: "{{ exim4_features_disable }}"
+  become: true
   notify: update exim4.conf.template
   tags:
     - exim4
@@ -45,13 +75,13 @@
 
 - name: Configure /etc/passwd.client
   when: exim4_passwd_client is defined and exim4_passwd_client
-  action: template
-  args:
+  ansible.builtin.template:
     src: passwd.client.j2
     dest: /etc/exim4/passwd.client
     owner: root
     group: Debian-exim
-    mode: 0640
+    mode: '0640'
+  become: true
   notify: update exim4.conf
   tags:
     - exim4
@@ -59,14 +89,14 @@
 
 - name: Add keyvalue configuration
   when: exim4_conf_keyvalue is defined and exim4_conf_keyvalue
-  action: template
-  args:
+  ansible.builtin.template:
     src: keyvalue.j2
     dest: "/etc/exim4/{{ item.name }}"
     owner: root
     group: Debian-exim
-    mode: 0640
+    mode: '0640'
   with_items: "{{ exim4_conf_keyvalue }}"
+  become: true
   notify: reload exim4
   tags:
     - exim4
@@ -75,14 +105,14 @@
 
 - name: Add single values configuration
   when: exim4_conf_values is defined and exim4_conf_values
-  action: template
-  args:
+  ansible.builtin.template:
     src: values.j2
     dest: "/etc/exim4/{{ item.name }}"
     owner: root
     group: Debian-exim
-    mode: 0640
+    mode: '0640'
   with_items: "{{ exim4_conf_values }}"
+  become: true
   notify: reload exim4
   tags:
     - exim4
@@ -90,16 +120,16 @@
     - exim4-reconfigure-values
 
 - name: Setup logrotate
-  action: template
-  args:
+  ansible.builtin.template:
     src: logrotate.j2
     dest: "/etc/logrotate.d/{{ item.name }}"
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
   with_items:
     - "{{ exim4_logrotate_base }}"
     - "{{ exim4_logrotate_paniclog }}"
+  become: true
   tags:
     - exim4
     - exim4-reconfigure
@@ -107,27 +137,30 @@
 
 - name: Ensure SSL cert group exists
   when: authldap is not defined or not authldap
-  action: group
-  args:
+  ansible.builtin.group:
     name: ssl-cert
     state: present
+    system: true
+  become: true
   tags:
     - exim4
     - exim4-user
 
 - name: Add Exim user into SSL group
   when: authldap is not defined or not authldap
-  action: user
-  args:
+  ansible.builtin.user:
     name: Debian-exim
     groups: ssl-cert
-    append: yes
+    append: true
+  become: true
   notify: restart exim4
   tags:
     - exim4
     - exim4-user
 
-- include: dkim.yml
+- name: Setup DKIM
+  ansible.builtin.include_tasks:
+    file: dkim.yml
   when: exim4_dkim_enable
   tags:
     - exim4

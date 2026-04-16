@@ -1,0 +1,16 @@
+---
+# NOTE(zstyblik): 'nocreate' seems to be present at least since Debian 11.
+__exim4_logrotate_base:
+  - name: exim4-base
+    path: /var/log/exim4/mainlog /var/log/exim4/rejectlog
+    type: daily
+    rotate: 10
+    nocreate: true
+
+# NOTE(zstyblik): 'nocreate' seems to be present at least since Debian 11.
+__exim4_logrotate_paniclog:
+  - name: exim4-paniclog
+    path: /var/log/exim4/paniclog
+    type: size 10M
+    rotate: 10
+    nocreate: true

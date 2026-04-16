@@ -5,5 +5,10 @@
 	compress
 	delaycompress
 	notifempty
+{% if item.create is defined and item.create %}
 	create {{ item.create |default('640 Debian-exim adm') }}
+{% endif %}
+{% if item.nocreate is defined and item.nocreate %}
+	nocreate
+{% endif %}
 }

@@ -1,38 +1,56 @@
 ---
 
 - name: Generate DKIM private key
-  command: openssl genrsa -out dkim.private {{ exim4_dkim_keysize }} -outform PEM
-  args:
+  ansible.builtin.command:
+    argv:
+      - /usr/bin/openssl
+      - genrsa
+      - -out
+      - dkim.private
+      - "{{ exim4_dkim_keysize }}"
+      - -outform
+      - PEM
     chdir: /etc/exim4
     creates: /etc/exim4/dkim.private
+  become: true
   notify: reload exim4
   tags:
     - exim4
     - exim4-dkim
 
 - name: Setup DKIM public key
-  command: openssl rsa -in dkim.private -out dkim.public -pubout -outform PEM
-  args:
+  ansible.builtin.command:
+    argv:
+      - /usr/bin/openssl
+      - rsa
+      - -in
+      - dkim.private
+      - -out
+      - dkim.public
+      - -pubout
+      - -outform
+      - PEM
     chdir: /etc/exim4
     creates: /etc/exim4/dkim.public
+  become: true
   notify: reload exim4
   tags:
     - exim4
     - exim4-dkim
 
 - name: Setup private key permissions
-  action: file
-  args:
+  ansible.builtin.file:
     dest: "{{ item.name }}"
     owner: root
     group: Debian-exim
     mode: "{{ item.mode }}"
   with_items:
     - name: /etc/exim4/dkim.private
-      mode: 640
+      mode: '0640'
     - name: /etc/exim4/dkim.public
-      mode: 644
+      mode: '0644'
   ignore_errors: "{{ ansible_check_mode }}"
+  become: true
   tags:
     - exim4
     - exim4-dkim
