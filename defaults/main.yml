@@ -29,3 +29,7 @@ exim4_features_disable: []
 
 exim4_logrotate_base: []
 exim4_logrotate_paniclog: []
+
+exim4_service_name: exim4
+exim4_service_state: started
+exim4_service_enabled: true

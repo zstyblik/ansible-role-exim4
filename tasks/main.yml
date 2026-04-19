@@ -165,3 +165,13 @@
   tags:
     - exim4
     - exim4-dkim
+
+- name: Ensure exim4 service is in desired state.
+  ansible.builtin.service:
+    name: "{{ exim4_service_name }}"
+    state: "{{ exim4_service_state }}"
+    enabled: "{{ exim4_service_enabled }}"
+  become: true
+  tags:
+    - exim4
+    - exim4-service
