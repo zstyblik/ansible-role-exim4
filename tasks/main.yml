@@ -175,3 +175,17 @@
   tags:
     - exim4
     - exim4-service
+
+# NOTE(zstyblik): for systemd only, otherwise it should be handled by cron.
+- name: Ensure exim4-base timer is in desired state.
+  when:
+    ansible_facts.service_mgr is defined
+    and ansible_facts.service_mgr == "systemd"
+  ansible.builtin.systemd:
+    name: "{{ exim4_base_timer_name }}"
+    state: "{{ exim4_base_timer_state }}"
+    enabled: "{{ exim4_base_timer_enabled }}"
+  become: true
+  tags:
+    - exim4
+    - exim4-service

@@ -33,3 +33,7 @@ exim4_logrotate_paniclog: []
 exim4_service_name: exim4
 exim4_service_state: started
 exim4_service_enabled: true
+# NOTE(zstyblik): for systemd only, otherwise it should be handled by cron.
+exim4_base_timer_name: exim4-base.timer
+exim4_base_timer_state: started
+exim4_base_timer_enabled: true
